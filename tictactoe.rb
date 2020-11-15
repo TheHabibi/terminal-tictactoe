@@ -9,7 +9,7 @@ def fillArr
 end
 
 def drawBoard
-    $board = ""
+    $board = "\n\n"
     for m in 0..8
         $board << "| #{$boardArray[m]} |"
         if (m+1) % 3 == 0 && m <8
@@ -26,46 +26,76 @@ def playerTurn(player, index)
     if $moves.include?(index) != true
         $moves.push(index)
         $boardArray[index-1] = player.symbol
-        drawBoard
+        player.tiles.push(index)
+        $round += 1
+        
     else
-        puts "You can't put your symbol here!\n\n"
+        puts "\n\nThis cell is already filled!\n\n"
     end
-
-    
-    
+        drawBoard
 end
+
+def newGame
+    $moves = Array.new
+    $boardArray = Array.new
+    $board = ""
+    $round = 0
+    
+    fillArr
+    drawBoard
+    game
+end    
 
 def game
-    playerOne = Player.new("x")
-    playerTwo = Player.new("o")
+    playerOne = Player.new("x",1)
+    playerTwo = Player.new("o",2)
     
-    move = nil
-    round = 0
-    while round < 9
-        puts "Player #{round%2+1} please start"
+    currentPlayer = playerOne
+    
+    
+    while $round < 9
+        puts "Player #{currentPlayer.number} please enter a number:"
         move = gets.chomp().to_i
-        if move.odd?
-            playerTurn(playerOne, move)
-        else
-            playerTurn(playerTwo, move)
+        
+        playerTurn(currentPlayer, move)
+        if gameCheck(currentPlayer)
+            puts "Player #{currentPlayer.number} WON!!!\n\n"        
+            exit
         end
-        round += 1
+       
+        if $round.even?
+            currentPlayer = playerOne
+        else
+            currentPlayer = playerTwo
+        end
     end
+    puts "TIE!!"
 end
 
+def gameCheck(player)
+    winCombinations = [
+        [1,2,3],[4,5,6],[7,8,9],
+        [1,4,7],[2,5,8],[3,6,9],
+        [1,5,9],[3,5,7]]
+
+    winCombinations.each do |arr|
+        return true if (arr - player.tiles).empty?
+    end
+       false
+end
 
 class Player
     attr_reader :symbol
-    def initialize(symbol)
+    attr_reader :number
+    attr_accessor :tiles
+    def initialize(symbol, number)
         @symbol = symbol
+        @number = number
+        @tiles = Array.new
     end
 end
 
-$moves = Array.new
-$boardArray = Array.new
-$board = ""
-fillArr
-drawBoard
-game
 
 
+
+newGame
